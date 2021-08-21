@@ -9,7 +9,7 @@ export default StyleSheet.create({
     paddingHorizontal: 5,
     marginTop: 5,
   },
-  inputContainer: {paddingVertical: 12},
+  inputContainer: {paddingVertical: 2},
   textInput: {
     flex: 1,
   },
