@@ -1,7 +1,9 @@
-import React from 'react';
-import {useState} from 'react';
+import React, {useState, useCallback, useContext} from 'react';
 import SignupComponent from '../../components/Signup';
-import envs from '../../config/env';
+import {GlobalContext} from '../../context/Provider';
+import register, {clearAuthState} from '../../context/actions/auth/register';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {LOGIN} from '../../constants/routeNames';
 
 const validateEmail = email => {
   const re =
@@ -11,19 +13,30 @@ const validateEmail = email => {
 
 const Register = () => {
   const [form, setForm] = useState({});
-  const [error, setError] = useState({});
-  const {BACKEND_URL} = envs;
+  const [errors, setErrors] = useState({});
+  const {navigate} = useNavigation();
+  const {
+    authDispatch,
+    authState: {error, loading, data},
+  } = useContext(GlobalContext);
 
-  console.log(BACKEND_URL);
-  console.log(__DEV__);
+  useFocusEffect(
+    useCallback(() => {
+      console.log(data, error);
+      if (data) {
+        navigate(LOGIN);
+        clearAuthState()(authDispatch);
+      }
+    }, [data, error]),
+  );
 
   const emailValidation = (key, value) => {
     if (!validateEmail(value)) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, [key]: 'This field must be an email!'};
       });
     } else {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, [key]: null};
       });
     }
@@ -31,11 +44,11 @@ const Register = () => {
 
   const passwordValidation = (key, value) => {
     if (value.trim().length < 6) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, [key]: 'This field needs min 6 character!'};
       });
     } else {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, [key]: null};
       });
     }
@@ -48,12 +61,12 @@ const Register = () => {
       } else if (key === 'email') {
         emailValidation(key, value);
       } else {
-        setError(prevState => {
+        setErrors(prevState => {
           return {...prevState, [key]: null};
         });
       }
     } else {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, [key]: 'This field is required!'};
       });
     }
@@ -67,41 +80,48 @@ const Register = () => {
   };
 
   const onSubmit = () => {
-    console.log(form);
-
     if (!form.username) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, username: 'Please add a username!'};
       });
     }
     if (!form.firstName) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, firstName: 'Please add a first name!'};
       });
     }
     if (!form.lastName) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, lastName: 'Please add a last name!'};
       });
     }
     if (!form.email) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, email: 'Please add a email!'};
       });
     }
     if (!form.password) {
-      setError(prevState => {
+      setErrors(prevState => {
         return {...prevState, password: 'Please add a password!'};
       });
+    }
+    if (
+      Object.values(form).length === 5 &&
+      Object.values(form).every(item => item.trim().length > 0) &&
+      Object.values(errors).every(err => !err)
+    ) {
+      register(form)(authDispatch);
     }
   };
 
   return (
     <SignupComponent
       form={form}
-      error={error}
+      errors={errors}
       onChange={onChange}
       onSubmit={onSubmit}
+      loading={loading}
+      error={error}
     />
   );
 };

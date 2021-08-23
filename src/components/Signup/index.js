@@ -7,7 +7,14 @@ import Input from '../../components/common/Input';
 import styles from './styles';
 import {LOGIN} from '../../constants/routeNames';
 
-const SignupComponent = ({form, error, onChange, onSubmit}) => {
+const SignupComponent = ({
+  form,
+  errors,
+  onChange,
+  onSubmit,
+  error,
+  loading,
+}) => {
   const {navigate} = useNavigation();
   return (
     <Container>
@@ -18,29 +25,30 @@ const SignupComponent = ({form, error, onChange, onSubmit}) => {
       <View>
         <Text style={styles.title}>Welcome to RNContacts</Text>
         <Text style={styles.subTitle}>Create a free account</Text>
+        {error?.error && <Text>error.error</Text>}
         <Input
           label="Username"
           placeholder="Enter Username"
           onChangeText={value => onChange('username', value)}
-          error={error.username}
+          error={errors.username || error?.username?.[0]}
         />
         <Input
           label="First name"
           placeholder="Enter first name"
           onChangeText={value => onChange('firstName', value)}
-          error={error.firstName}
+          error={errors.firstName || error?.first_name?.[0]}
         />
         <Input
           label="Last name"
           placeholder="Enter Last name"
           onChangeText={value => onChange('lastName', value)}
-          error={error.lastName}
+          error={errors.lastName || error?.last_name?.[0]}
         />
         <Input
           label="Email"
           placeholder="Enter Email"
           onChangeText={value => onChange('email', value)}
-          error={error.email}
+          error={errors.email || error?.email?.[0]}
         />
         <Input
           label="Password"
@@ -49,11 +57,16 @@ const SignupComponent = ({form, error, onChange, onSubmit}) => {
           iconPosition="right"
           placeholder="Enter Password"
           onChangeText={value => onChange('password', value)}
-          error={error.password}
+          error={errors.password || error?.password?.[0]}
         />
-
-        <CustomButton onPress={onSubmit} primary title="Submit" />
-
+        {console.log('error', error)}
+        <CustomButton
+          onPress={onSubmit}
+          primary
+          title="Submit"
+          loading={loading}
+          disabled={loading}
+        />
         <View style={styles.createSection}>
           <Text style={styles.infoText}>Already have an account?</Text>
           <TouchableOpacity onPress={() => navigate(LOGIN)}>
